@@ -4,6 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+/**
+ * 通用响应结果封装类，用于统一接口返回格式
+ *
+ * <p>包含状态码、提示消息和响应数据，提供 ok 和 error 静态工厂方法快速构建实例</p>
+ */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
