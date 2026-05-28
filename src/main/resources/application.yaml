@@ -6,9 +6,24 @@ spring:
     url: jdbc:mysql://192.168.100.129:3306/minio?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true&useSSL=false
     username: root
     password: 123456
+  banner:
+    location: classpath:banner.txt
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.springminio.entity
   configuration:
     map-underscore-to-camel-case: true
+
+
+# 服务器端口: 8080
+server:
+  port: 8080
+
+
+
+
+minio:
+    endpoint: http://192.168.100.129:9000
+    access-key: minioadmin
+    secret-key: 123456
