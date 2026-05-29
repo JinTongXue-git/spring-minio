@@ -8,6 +8,10 @@ spring:
     password: 123456
   banner:
     location: classpath:banner.txt
+  servlet:
+    multipart:
+      max-file-size: 100MB      # 单个文件最大 100MB
+      max-request-size: 100MB   # 整个请求最大 100MB
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
@@ -26,4 +30,4 @@ server:
 minio:
     endpoint: http://192.168.100.129:9000
     access-key: minioadmin
-    secret-key: 123456
+    secret-key: 12345678
