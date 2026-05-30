@@ -22,45 +22,35 @@ public class MinioConfig {
     @Value("${minio.secretKey:12345678}")
     private String secretKey;
 
-    /**配置*/
+    /**
+     * 配置MinioClient Bean，自动创建桶
+     */
+//    @Bean(name = "minioClient")
     @Bean
     public MinioClient minioClient(){
-        MinioClient minioadmin = MinioClient.builder()
+        MinioClient client = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
 
-        String[] buckets = new String[]{"images-bucket" , "contract-bucket"};
+        createBucketsIfNotExists(client, new String[]{"images-bucket", "contract-bucket"});
+
+        return client;
+    }
+
+    /**
+     * 辅助方法：创建桶（如果不存在）
+     */
+    private void createBucketsIfNotExists(MinioClient client, String[] bucketNames) {
         try {
-            for (String bucketName : buckets) {
-                if (!minioadmin.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build()) ){
-                    minioadmin.makeBucket(
-                            MakeBucketArgs.builder().bucket(bucketName).build()
-                    );
+            for (String bucketName : bucketNames) {
+                if (!client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build())) {
+                    client.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
                 }
             }
-        } catch (ErrorResponseException e) {
-            throw new RuntimeException(e);
-        } catch (InsufficientDataException e) {
-            throw new RuntimeException(e);
-        } catch (InternalException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidResponseException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        } catch (ServerException e) {
-            throw new RuntimeException(e);
-        } catch (XmlParserException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("创建MinIO桶失败", e);
         }
-        //minioadmin.setTimeout(1000, 1000, 1000); // Set connect and read timeout to 1000 milliseconds each
-
-        return minioadmin;
     }
 
 
