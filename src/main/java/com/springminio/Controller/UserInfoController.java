@@ -1,15 +1,17 @@
 package com.springminio.Controller;
 
 import com.springminio.entity.UserInfo;
+import com.springminio.entity.UserImage;
+import com.springminio.entity.UserContract;
 import com.springminio.result.R;
 import com.springminio.service.UserInfoService;
+import com.springminio.service.UserImageService;
+import com.springminio.service.UserContractService;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -25,6 +27,10 @@ public class UserInfoController {
     private final UserInfoService userInfoService;
     //这是构造函数注入
     private final MinioClient minioClient;
+    private final UserImageService userImageService;
+    private final UserContractService userContractService;
+    @Value("${minio.endpoint:http://192.168.100.129:9000}")
+    private String endpoint;
 
     /**
      * 查询所有用户信息
@@ -38,6 +44,16 @@ public class UserInfoController {
 
         return R.ok(list);
     }
+
+
+    @RequestMapping(path = "/user/{id}" , method = RequestMethod.GET)
+    public R getUserInfo(@PathVariable(name = "id")  Integer id){
+
+        UserInfo userInfo = userInfoService.getById(id);
+
+        return R.ok( "单个用户信息返回成功" , userInfo);
+    }
+
 
     @RequestMapping(path = "/user/image" , method = RequestMethod.POST)
     public R uploadImage(MultipartFile file) throws Exception {
@@ -91,6 +107,58 @@ public class UserInfoController {
         );
         return R.ok("contract上传成功");
 
+    }
+
+
+
+
+
+    /**
+     * 根据用户ID查询头像URL
+     *
+     * @param id 用户ID
+     * @return 包含头像URL的响应对象，未查到返回失败
+     */
+    @RequestMapping(path = "/user/image/{id}", method = RequestMethod.GET)
+    public R getUserImage(@PathVariable(name = "id") Integer id) {
+        // 查询用户的头像记录
+        UserImage userImage = userImageService.lambdaQuery()
+                .eq(UserImage::getUid, id)
+                .one();
+
+        if (userImage == null) {
+            // 未查到数据，返回失败
+            return R.error("未找到该用户的头像信息");
+        }
+
+        // 构建MinIO的完整访问URL
+        String url = endpoint + "/" + userImage.getBucket() + "/" + userImage.getObject();
+
+        return R.ok(url);
+    }
+
+    /**
+     * 根据用户ID查询合同URL
+     *
+     * @param id 用户ID
+     * @return 包含合同URL的响应对象，未查到返回失败
+     */
+    @RequestMapping(path = "/user/contract/{id}", method = RequestMethod.GET)
+    public R getUserContract(@PathVariable(name = "id") Integer id) {
+        // 查询用户的合同记录
+        UserContract userContract = userContractService.lambdaQuery()
+                .eq(UserContract::getUid, id)
+                .one();
+
+        if (userContract == null) {
+            // 未查到数据，返回失败
+            return R.error("未找到该用户的合同信息");
+        }
+
+        // 构建MinIO的完整访问URL
+        String url = endpoint + "/" + userContract.getBucket() + "/" + userContract.getObject();
+
+        return R.ok(url);
     }
 
 }
